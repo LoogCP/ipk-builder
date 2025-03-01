@@ -1,0 +1,54 @@
+name: Build ImmortalWrt Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_repo:
+        description: 'Package Git Repository URL'
+        required: true
+        default: 'https://github.com/immortalwrt/luci-theme-argon'
+      version:
+        description: 'ImmortalWrt Version (e.g: 21.02.7)'
+        required: true
+        default: '24.10'
+
+jobs:
+  build-package:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget tar build-essential \
+        libssl-dev libncurses5-dev unzip git
+
+    - name: Download Image Builder
+      run: |
+        IB_NAME="immortalwrt-imagebuilder-x86-64.Linux-x86_64"
+        wget https://downloads.immortalwrt.org/releases/${{ inputs.version }}/targets/x86/64/$IB_NAME.tar.xz
+        tar -xvf $IB_NAME.tar.xz
+        mv $IB_NAME imagebuilder
+
+    - name: Clone package source
+      run: |
+        cd imagebuilder
+        git clone ${{ inputs.package_repo }} package/custom
+
+    - name: Build package
+      run: |
+        cd imagebuilder
+        make -j$(nproc) package/custom/compile V=s
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          imagebuilder/bin/packages/x86_64/base/*.ipk
+        tag_name: package-${{ github.run_id }}
+        name: Custom Package Build
+        body: "Automatically built ImmortalWrt package"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
