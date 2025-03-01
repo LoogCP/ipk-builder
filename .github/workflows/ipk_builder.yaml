@@ -1,7 +1,7 @@
 name: Build ImmortalWrt Package
 
 on:
-  # workflow_dispatch:
+   workflow_dispatch:
   #   inputs:
   #     package_repo:
   #       description: 'Package Git Repository URL'
