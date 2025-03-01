@@ -41,12 +41,12 @@ jobs:
     - name: Clone package source
       run: |
         cd imagebuilder
-        git clone -b $ipk_branch $ipk_repo package/homeproxy
+        git clone -b $ipk_branch $ipk_repo package/custom/homeproxy
 
     - name: Build package
       run: |
-        cd imagebuilder
-        make -j$(nproc) package/homeproxy/compile V=s
+        #        cd imagebuilder
+        make -j$(nproc) package/custom/homeproxy/compile V=s
 
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
